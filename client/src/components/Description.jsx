@@ -1,9 +1,16 @@
 import React from 'react'
 import { assets } from '../assets/assets'
+import { motion } from "motion/react"
+
 
 const Description = () => {
   return (
-    <div className='flex flex-col items-center jusity-center my-24 py-6 md:px-28'>
+    <motion.div
+    initial={{opacity:0.2, y:100}}
+    transition={{duration:1}}
+    whileInView={{opacity:1, y:0}}
+    viewport={{once:true}}
+    className='flex flex-col items-center jusity-center my-24 py-6 md:px-28'>
       <h1 className='text-3xl sm:text-4xl font'>Create AI Images</h1>
       <p className='text-gray-500 mb-8'>Turn your imagination into visuals</p>
 
@@ -19,7 +26,7 @@ const Description = () => {
             </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
