@@ -2,13 +2,20 @@ import React, { useContext, useEffect, useState } from 'react'
 import { assets } from '../assets/assets'
 import { AppContext } from '../context/AppContext'
 import { motion } from "motion/react"
+import axios from 'axios'
+import { toast } from 'react-toastify'
+
 
 const Login = () => {
 
 
     const [state, setstate] = useState("Login")
-    const { showlogin, setshowlogin } = useContext(AppContext)
+    const { showlogin, setshowlogin ,backendurl,settoken,setuser} = useContext(AppContext)
 
+
+    const [name,setName]=useState('')
+    const [email,setEmail]=useState('')
+    const [password,setPassword]=useState('')
 
 
     useEffect(() => {
@@ -17,10 +24,43 @@ const Login = () => {
             document.body.style.overflow = 'unset';
         }
     }, [])
+
+
+    const onSubmitHandler=async(e)=>{
+        e.preventDefault();
+        try{
+
+            if(state==='Login'){
+                const {data}=await axios.post(backendurl+'/api/user/login',{email,password})
+
+                if(data.success){
+                    settoken(data.token)
+                    setuser(data.user)
+                    localStorage.setItem('token',data.token)
+                    setshowlogin(false)
+                }else{
+                    toast.error(data.message)
+                }
+            }else{
+                const {data}=await axios.post(backendurl+'/api/user/register',{name,email,password})
+
+                if(data.success){
+                    settoken(data.token)
+                    setuser(data.user)
+                    localStorage.setItem('token',data.token)
+                    setshowlogin(false)
+                }else{
+                    toast.error(data.message)
+                }
+            }
+        }catch(error){
+            toast.error(error.message)
+        }
+    }
     return (
 
         <div className='absolute top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm bg-black/30 flex justify-center items-center'>
-            <motion.form
+            <motion.form onSubmit={onSubmitHandler}
                 initial={{ opacity: 0.2, y: 50 }}
                 transition={{ duration: 0.3 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -30,14 +70,15 @@ const Login = () => {
                 <p className='text-sm'>Welcome back! Please sign in to continue</p>
                 {state !== "Login" && <div className='border px-6 py-2 flex items-center gap-2 rounded-full mt-4'>
                     <img src={assets.user_icon} alt="" />
-                    <input className='outline-none text-sm' type="text" placeholder='Full Name' required />
+                    <input onChange={e=>setName(e.target.value)} value={name}
+                     className='outline-none text-sm' type="text" placeholder='Full Name' required />
                 </div>}
                 <div className='border px-6 py-2 flex items-center gap-2 rounded-full mt-4'>
-                    <img src={assets.email_icon} alt="" />
+                    <img onChange={e=>setEmail(e.target.value)} value={email} src={assets.email_icon} alt="" />
                     <input className='outline-none text-sm' type="email" placeholder='Email id' required />
                 </div>
                 <div className='border px-6 py-2 flex items-center gap-2 rounded-full mt-4'>
-                    <img src={assets.lock_icon} alt="" />
+                    <img onChange={e=>setPassword(e.target.value)} value={password} src={assets.lock_icon} alt="" />
                     <input className='outline-none text-sm' type="password" placeholder='Password' required />
 
 
