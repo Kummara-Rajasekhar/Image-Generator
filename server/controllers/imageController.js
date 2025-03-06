@@ -17,7 +17,6 @@ export const generateImage=async(req,res)=>{
             return res.json({success:false,message:"No Credit Balance", creditBalance:user.creditBalance})
         }
 
-
         const formData=new FormData()
         formData.append('prompt',prompt)
 
