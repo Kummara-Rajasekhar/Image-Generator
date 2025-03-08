@@ -1,6 +1,7 @@
-import { Children, createContext, useState } from "react";
+import { Children, createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axios from 'axios'
+import { useNavigate } from "react-router-dom";
 
 
 export const AppContext=createContext()
@@ -11,17 +12,55 @@ const AppContextProvider=(props)=>{
     const [token,settoken]=useState(localStorage.getItem('token'))
     const [credit,setCredit]=useState(false)
 
+    const navigate=useNavigate()
+
     const loadCreditsData=async()=>{
         try{
             const {data}=await axios.get(backendUrl+'/api/user/credits',{headers:token})
 
             if(data.success){
+                setCredit(data.credit)
+                setuser(data.user)
                 
             }
 
         }catch(error){
             console.log(error)
             toast.error(error.message)
+        }
+    }
+
+    useEffect(()=>{
+        if(token){
+            loadCreditsData()
+        }
+    },[token])
+
+
+    const logout=()=>{
+        localStorage.removeItem('token')
+        settoken('')
+        setuser(null)
+    }
+
+    const generateImage=async()=>{
+        try{
+            const {data}=await axios.post(backendUrl+'/api/image/generate-image',{prompt},{headers:{token}})
+            if(data.success){
+                loadCreditsData()
+                return data.resultImage;
+            }else{
+                toast.error(data.message)
+                loadCreditsData()
+                if(data.creditBalance===0){
+                    navigate('/')
+                }
+
+            }
+
+        }catch(error){
+            toast.error(error.message)
+
         }
     }
 
@@ -37,6 +76,10 @@ const AppContextProvider=(props)=>{
         settoken,
         credit,
         setCredit,
+        loadCreditsData,
+        logout,
+        generateImage,
+
 
         
 

@@ -2,11 +2,65 @@ import React, { useContext } from 'react'
 import { assets, plans } from '../assets/assets'
 import { AppContext } from '../context/AppContext'
 import { motion } from "motion/react"
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 
 const BuyCredit = () => {
 
-  const {user}=useContext(AppContext);
+  const {user,backendurl,loadCreditsData,token,setshowlogin}=useContext(AppContext);
+
+
+  const navigate=useNavigate()
+
+
+  const initpay=async(order)=>{
+    const options={
+      key:import.meta.env.RAZORPAY_KEY_ID,
+      amount:order.amount,
+      currency:order.currency,
+      name:'Credits Payment',
+      description:'Credits Payment',
+      order_id:order.id,
+      receipt:order.receipt,
+      handler:async(response)=>{
+        try{
+          const {data}=await axios.post(backendurl+'/api/user/verify-razor',response,{headers:{token}})
+
+          if(data.success){
+            loadCreditsData();
+            navigate('/')
+            toast.success('Credit Added')
+
+          }
+        }catch(error){
+          toast.error(error.message)
+        }
+      }
+    }
+
+    const rzp=new window.Razorpay(options)
+    rzp.open()
+
+
+
+  }
+
+  const paymentRazorpay=async(planId)=>{
+    try{
+      if(!user){
+        setshowlogin(true)
+      }
+      const {data}=await axios.post(backendurl+'/api/user/payment-razor',{planId},{headers:{token}})
+      if(data.success){
+        initpay()
+      }
+
+    }catch(error){
+      toast.error(error.message)
+    }
+  }
   return (
 
 
@@ -27,7 +81,7 @@ const BuyCredit = () => {
               <p className='mt-3 mb-1 font-semibold'>{item.desc}</p>
               <p className='text-sm'>{item.price}</p>
               <p className='text-3xl font-medium'>${item.price} / {item.credits}</p>
-              <button className='w-full bg-gray-800 text-white mt-8 textt-sm rounded-md py-2.5 min-w-52'> { user ?"Purchase":"Get Started"}</button>
+              <button onClick={()=>paymentRazorpay(item.id)} className='w-full bg-gray-800 text-white mt-8 textt-sm rounded-md py-2.5 min-w-52'> { user ?"Purchase":"Get Started"}</button>
             </div>
           ))
         }
