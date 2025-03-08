@@ -149,7 +149,6 @@ export const paymentRazorpay=async(req,res)=>{
     }
 }
 
-
 export const   verifyRazorpay=async (req,res)=>{
     try{
 
